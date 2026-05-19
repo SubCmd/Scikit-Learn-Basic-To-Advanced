@@ -14,11 +14,22 @@ rcParams['font.family'] = 'AppleGothic' # mac version
 rcParams['axes.unicode_minus'] = False
 '''
 
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-from scipy import stats
-import statsmodels.api as sm
-import statsmodels.formula.api as smf
+from sklearn.neighbors import KNeighborsClassifier
 
+knn = KNeighborsClassifier(n_neighbors=5, weights='uniform')
+
+# 현재 하이퍼파라미터 확인
+print(knn.get_params())
+# {'algorithm': 'auto', 'leaf_size': 30, 'metric': 'minkowski',
+#  'n_neighbors': 5, 'p': 2, 'weights': 'uniform', ...}
+
+# 하이퍼파라미터 변경
+knn.set_params(n_neighbors=3, weights='distance')
+print(f"변경 후 K: {knn.get_params()['n_neighbors']}")  # 3
+print(f"변경 후 weights: {knn.get_params()['weights']}")  # distance
+
+"""
+{'algorithm': 'auto', 'leaf_size': 30, 'metric': 'minkowski', 'metric_params': None,'n_jobs': None, 'n_neighbors': 5, 'p': 2, 'weights': 'uniform'}
+변경 후 K: 3
+변경 후 weights: distance
+"""
