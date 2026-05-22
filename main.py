@@ -15,50 +15,51 @@ rcParams['axes.unicode_minus'] = False
 '''
 
 # [과제]
-# load_breast_cancer() 데이터셋에 대해 EDA를 수행하라:
+# load_wine() 데이터셋을 사용하여:
 
 import numpy as np
-import pandas as pd
-from sklearn.datasets import load_breast_cancer
+from sklearn.datasets import load_wine
+from sklearn.model_selection import train_test_split
 
-# 데이터셋 로드
-cancer = load_breast_cancer()
-X, y = cancer.data, cancer.target
+wine = load_wine()
+X, y = wine.data, wine.target
 
-# 분석을 위해 pandas DataFrame으로 변환
-df = pd.DataFrame(X, columns=cancer.feature_names)
-df['target'] = y
+# 1. 80:20으로 데이터를 분리하라 (random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
 
-# 1. shape을 확인하고, 샘플 수와 특성 수를 출력하라
-print(f"전체 데이터 Shape: {df.shape}")
-print(f"- 샐픔 수(행): {X.shape[0]}개")
-print(f"- 특성 수(열): {X.shape[1]}개 (Target 제외)")
-print("-" * 60)
+# 2. 훈련/테스트 세트의 샘플 수를 출력하라
 
-# 2. 모든 특성의 데이터 타입을 확인하라
-print(df.info())
-print("-" * 60)
+print(f"훈련 클래스 비율: {np.bincount(y_train) / len(y_train)}")
+print(f"테스트 클래스 비율: {np.bincount(y_test) / len(y_test)}")
 
-# 3. 결측치가 있는지 확인하라
-print(f"{df.isnull().sum().sum()}개 -> 결측치 없음")
-print("-" * 60)
+# 3. stratify 미사용과 사용의 클래스 비율을 각각 출력하여 비교하라
 
-# 4. describe()로 기초 통계량을 확인하라
-print(df.describe().T)
-print("-" * 60)
+X_train_s, X_test_s, y_train_s, y_test_s = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
 
-# 5. 타겟(악성/양성) 클래스별 샘플 수와 비율을 출력하라
-# 6. 이 데이터셋은 균형/불균형 중 어디에 해당하는지 판단하라
+print(f"훈련 클래스 비율: {np.bincount(y_train_s) / len(y_train_s)}")
+print(f"테스트 클래스 비율: {np.bincount(y_test_s) / len(y_test_s)}")
 
-class_counts = df['target'].value_counts()
-class_proportions = df['target'].value_counts(normalize=True)
+# 4. test_size를 0.1, 0.2, 0.3으로 변경하며
+#    각각의 훈련/테스트 크기를 출력하라
 
-for cls in sorted(class_counts.index):
-    class_name = cancer.target_names[cls]
-    count = class_counts[cls]
-    proportion = class_proportions[cls] * 100
-    print(f"클래스 {cls} ({class_name}): {count}개 ({proportion:.2f}%)")
+test_size = [0.1, 0.2, 0.3]
+
+for size in test_size:
+    X_train, X_test, _, _ = train_test_split(
+        X, y, test_size=size, random_state=42, stratify=y
+    )
+    print(f"test_size: {size} / 훈련 세트: {X_train.shape[0]:>3} / 테스트 세트: {X_test.shape[0]:>3}")
 
 """
-
+훈련 클래스 비율: [0.31690141 0.40140845 0.28169014]
+테스트 클래스 비율: [0.38888889 0.38888889 0.22222222]
+훈련 클래스 비율: [0.33098592 0.40140845 0.26760563]
+테스트 클래스 비율: [0.33333333 0.38888889 0.27777778]
+test_size: 0.1 / 훈련 세트: 160 / 테스트 세트:  18
+test_size: 0.2 / 훈련 세트: 142 / 테스트 세트:  36
+test_size: 0.3 / 훈련 세트: 124 / 테스트 세트:  54
 """
