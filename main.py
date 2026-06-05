@@ -14,41 +14,23 @@ rcParams['font.family'] = 'AppleGothic' # mac version
 rcParams['axes.unicode_minus'] = False
 '''
 
-from sklearn.linear_model import LogisticRegression
-from sklearn.datasets import load_breast_cancer
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score, classification_report
+import pandas as pd
+import numpy as np
 
-# 데이터 준비
-cancer = load_breast_cancer()
-X_train, X_test, y_train, y_test = train_test_split(
-    cancer.data, cancer.target, test_size=0.2, random_state=42, stratify=cancer.target
-)
+# 각 특성의 가중치 확인
+coef_df = pd.DataFrame({
+    'feature': cancer.feature_names,
+    'coefficient': log_reg.coef_[0],
+    'abs_coefficient': np.abs(log_reg.coef_[0])
+}).sort_values('abs_coefficient', ascending=False)
 
-# 스케일링
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
+print("=== 특성별 계수 (절댓값 내림차순 Top 10) ===")
+for _, row in coef_df.head(10).iterrows():
+    direction = "양성↑" if row['coefficient'] > 0 else "악성↑"
+    print(f"  {row['feature']:30s} | coef: {row['coefficient']:+.4f} | {direction}")
 
-# 모델 학습
-log_reg = LogisticRegression(C=1.0, max_iter=200, random_state=42)
-log_reg.fit(X_train_scaled, y_train)
+print(f"\n절편(intercept): {log_reg.intercept_[0]:.4f}")
 
-# 예측 및 평가
-y_pred = log_reg.predict(X_test_scaled)
-print(f"정확도: {accuracy_score(y_test, y_pred):.4f}")
-print(f"\n{classification_report(y_test, y_pred, target_names=cancer.target_names)}")
-
-'''
-정확도: 0.9825
-
-              precision    recall  f1-score   support
-
-   malignant       0.98      0.98      0.98        42
-      benign       0.99      0.99      0.99        72
-
-    accuracy                           0.98       114
-   macro avg       0.98      0.98      0.98       114
-weighted avg       0.98      0.98      0.98       114
-'''
+# 해석 예시:
+# worst radius coef=-1.23 → worst radius가 클수록 악성(0) 확률 증가
+# worst concave points coef=-0.89 → 이 특성이 클수록 악성 확률 증가
